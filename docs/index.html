@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rivers Under Strain</title>
+  <meta name="description" content="Water quality across Indian states in 2013 and screening for pollution hotspots - an exploratory data analysis project.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">RS</span>
+        <span class="brand-text">
+          <strong>Rivers, Under Strain</strong>
+          <small>Water quality in India · 2013</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href="#overview">Overview</a>
+        <a href="#questions">The 5 questions ↘</a>
+        <a href="#numbers">Hotspots</a>
+        <a href="#about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">India · River water quality · 2013</p>
+        <h1>Where India's rivers run under strain.</h1>
+        <p class="lede">
+          947 monitoring stations across 30 states and union territories, measured for oxygen, acidity,
+          organic load and bacterial contamination. This page walks through the analysis notebook
+          question by question and screens the stations for pollution hotspots.
+        </p>
+        <ul class="tags">
+          <li>Station-level snapshot</li>
+          <li>State &amp; water-body comparison</li>
+          <li>Interactive data view</li>
+        </ul>
+        <a class="cta" href="#filters">Explore the dataset</a>
+      </div>
+    </section>
+
+    <section id="filters" class="filter-bar" aria-label="Filters">
+      <div class="wrap filter-inner">
+        <div class="filter-copy">
+          <strong>Explore the dataset</strong>
+          <span>Filter every figure by state and water-body type.</span>
+        </div>
+        <div class="filter-controls">
+          <label class="field">
+            <span>State</span>
+            <select id="f-state"><option value="">All states</option></select>
+          </label>
+          <label class="field">
+            <span>Water-body type</span>
+            <select id="f-type"><option value="">All types</option></select>
+          </label>
+          <button type="button" id="f-reset" class="btn-ghost">Reset</button>
+        </div>
+      </div>
+      <div class="wrap"><p id="filter-status" class="filter-status" aria-live="polite"></p></div>
+    </section>
+
+    <section id="overview" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Project dataset</p>
+          <h2>The overview</h2>
+          <p class="section-intro">
+            <em>Water Quality in India – 2013</em> from the Government of India's open-data portal: 36 CSV files,
+            one per river basin or group of rivers, combined into a single table of
+            <span id="ov-rows">947</span> rows and <span id="ov-cols">28</span> columns.
+          </p>
+        </div>
+        <div class="tiles" id="tiles"></div>
+      </div>
+    </section>
+
+    <section id="questions" class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">From the notebook</p>
+          <h2>The five questions, answered</h2>
+          <p class="section-intro">Each answer corresponds to a question in the analysis notebook. Figures recalculate for the current filter.</p>
+        </div>
+
+        <article class="question" id="q1">
+          <header class="q-head">
+            <span class="q-num">Q1</span>
+            <div>
+              <p class="q-level">BL-3 · Mean pollutant concentration</p>
+              <h3>What is the average level of each water-quality parameter?</h3>
+            </div>
+          </header>
+          <div class="q-grid">
+            <div class="panel">
+              <h4>Mean, median and reference value by parameter</h4>
+              <div class="table-wrap"><table class="data-table" id="q1-table"></table></div>
+            </div>
+            <div class="panel">
+              <h4>Share of stations outside the reference value</h4>
+              <p class="panel-note">Reference values are the ones printed in the dataset's column headings.</p>
+              <div id="q1-chart"></div>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>Across all stations:</strong> the overall average sits within the reference for dissolved oxygen and pH, but mean BOD
+            (4.73 mg/L) is above 3 mg/L, and the coliform means are far above their references.
+            These means are pulled up by a minority of heavily polluted stations: compare each mean with its median. Overall
+            averages can hide local hotspots, which is why the later questions filter and group the data.</p>
+          </div>
+        </article>
+
+        <article class="question" id="q2">
+          <header class="q-head">
+            <span class="q-num">Q2</span>
+            <div>
+              <p class="q-level">BL-3 · Filter for a specific pollutant</p>
+              <h3>Which stations have mean BOD above the reference value?</h3>
+            </div>
+          </header>
+          <div class="q-controls">
+            <label class="field field-inline">
+              <span>BOD threshold</span>
+              <select id="q2-threshold">
+                <option value="3" selected>3 mg/L (dataset reference)</option>
+                <option value="4">4 mg/L</option>
+                <option value="6">6 mg/L</option>
+                <option value="10">10 mg/L</option>
+                <option value="20">20 mg/L</option>
+                <option value="30">30 mg/L</option>
+              </select>
+            </label>
+            <p class="q-stat" id="q2-stat"></p>
+          </div>
+          <div class="q-grid">
+            <div class="panel">
+              <h4>Stations by mean BOD (mg/L)</h4>
+              <div class="legend" id="q2-legend"></div>
+              <div id="q2-hist"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-row">
+                <h4>Stations above the threshold</h4>
+                <input type="search" id="q2-search" class="search" placeholder="Search location or state" aria-label="Search stations">
+              </div>
+              <div class="table-wrap"><table class="data-table" id="q2-table"></table></div>
+              <button type="button" class="btn-ghost btn-more" id="q2-more"></button>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>Note:</strong> exceeding 3 mg/L is a screening criterion for this analysis, not an official finding that
+            a location is polluted. Stations marked <span class="imp-badge">imputed</span> had a missing BOD value that was filled with the median.</p>
+          </div>
+        </article>
+
+        <article class="question" id="q3">
+          <header class="q-head">
+            <span class="q-num">Q3</span>
+            <div>
+              <p class="q-level">BL-4 · Impute missing sample values</p>
+              <h3>How were missing measurements handled?</h3>
+            </div>
+          </header>
+          <div class="q-grid">
+            <div class="panel">
+              <h4>Before and after cleaning</h4>
+              <div class="before-after">
+                <div><span class="ba-label">Missing cells before</span><span class="ba-value" id="q3-before">1,309</span></div>
+                <span class="ba-arrow" aria-hidden="true">→</span>
+                <div><span class="ba-label">Missing cells after</span><span class="ba-value" id="q3-after">0</span></div>
+              </div>
+              <ol class="steps">
+                <li>Keep the original combined table untouched; clean a copy.</li>
+                <li>Convert every measurement column to numbers.</li>
+                <li>Fill each column's gaps with that column's median.</li>
+                <li>Verify: no missing values remain, and all 947 rows are kept.</li>
+              </ol>
+              <p class="panel-note">The median was used because it is less sensitive than the mean to extreme readings, which coliform counts have many of.</p>
+            </div>
+            <div class="panel">
+              <h4>Share of stations with a missing value, by parameter</h4>
+              <p class="panel-note">Before imputation. Fecal coliform has the most gaps.</p>
+              <div id="q3-chart"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="question" id="q4">
+          <header class="q-head">
+            <span class="q-num">Q4</span>
+            <div>
+              <p class="q-level">BL-4 · Group by state and water-body type</p>
+              <h3>How does water quality vary by state and water-body type?</h3>
+            </div>
+          </header>
+          <div class="panel">
+            <div class="panel-row">
+              <h4>Average measurements by state</h4>
+              <span class="panel-note">Click a column heading to sort.</span>
+            </div>
+            <div class="table-wrap"><table class="data-table" id="q4-state"></table></div>
+          </div>
+          <div class="q-grid">
+            <div class="panel">
+              <div class="panel-row">
+                <h4>By water-body type</h4>
+                <label class="field field-inline field-sm">
+                  <span class="sr-only">Parameter</span>
+                  <select id="q4-param"></select>
+                </label>
+              </div>
+              <div id="q4-chart"></div>
+            </div>
+            <div class="panel">
+              <h4>All parameters by water-body type</h4>
+              <div class="table-wrap"><table class="data-table" id="q4-type"></table></div>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>Note:</strong> water-body type is inferred from the source filename, as in the notebook.
+            "Other/Unclassified" holds the single-river basin files (Ganga, Yamuna, Godavari and others), which the notebook's filename rule does not match.</p>
+          </div>
+        </article>
+
+        <article class="question" id="q5">
+          <header class="q-head">
+            <span class="q-num">Q5</span>
+            <div>
+              <p class="q-level">BL-5 · Visualize pollutant level differences</p>
+              <h3>Which states have the highest pollutant levels?</h3>
+            </div>
+          </header>
+          <div class="panel">
+            <div class="panel-row">
+              <h4 id="q5-title">Top 10 states by average BOD</h4>
+              <label class="field field-inline field-sm">
+                <span class="sr-only">Parameter</span>
+                <select id="q5-param"></select>
+              </label>
+            </div>
+            <p class="panel-note" id="q5-note"></p>
+            <div id="q5-chart"></div>
+          </div>
+          <div class="callout">
+            <p><strong>Reading it:</strong> a high state average does not mean every water body in that state is polluted;
+            a few stations can drive the figure. States with few stations are especially sensitive, so the station count is shown next to each bar.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="numbers" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Screen stations · compare states · see the sample mix</p>
+          <h2>Hotspots, by the numbers</h2>
+          <p class="section-intro">
+            A multi-parameter screen: each station is checked against the five reference values in the dataset headings
+            (DO &gt; 4 mg/L, pH 6.5–8.5, BOD &lt; 3 mg/L, fecal coliform &lt; 2,500 and total coliform &lt; 5,000 MPN/100ml).
+            Stations failing three or more checks are flagged as <strong>potential hotspots</strong>.
+          </p>
+        </div>
+        <div class="cards">
+          <div class="card card-wide">
+            <p class="card-kicker">Multi-parameter screen</p>
+            <h3>Stations failing the most checks</h3>
+            <div class="table-wrap"><table class="data-table" id="hs-table"></table></div>
+          </div>
+          <div class="card">
+            <p class="card-kicker">Checks failed</p>
+            <h3>How many stations fail how many checks</h3>
+            <div id="hs-dist"></div>
+          </div>
+          <div class="card">
+            <p class="card-kicker">Top 8 states · hotspot share</p>
+            <h3>Share of stations flagged as hotspots</h3>
+            <p class="panel-note">States with at least 5 stations.</p>
+            <div id="hs-states"></div>
+          </div>
+          <div class="card">
+            <p class="card-kicker">Top 8 states</p>
+            <h3>Monitoring stations by state</h3>
+            <div id="st-count"></div>
+          </div>
+          <div class="card">
+            <p class="card-kicker">Sample mix</p>
+            <h3>What the sample includes</h3>
+            <div id="mix"></div>
+          </div>
+          <div class="card card-note">
+            <p class="card-kicker" aria-hidden="true">✳</p>
+            <h3>A note on reading the comparison</h3>
+            <p>Every value is a station's <em>annual mean</em> for 2013, after median imputation. A station can fail a
+            check on its mean while meeting it most of the year, or the reverse. Treat flags as a list of places to look at
+            more closely, not as a verdict.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section section-alt">
+      <div class="wrap prose-grid">
+        <div class="prose">
+          <h2>About this project</h2>
+          <p>
+            <strong>Water Quality Analysis Across States and Identification of Pollution Hotspots</strong> (problem statement PS-65)
+            is an exploratory data analysis and visualization project by Paidi Karthik (roll no. 160125737028), Department of
+            Information Technology, Chaitanya Bharathi Institute of Technology, Hyderabad.
+          </p>
+          <p>
+            The analysis was done in Python with Pandas, NumPy, Matplotlib and Seaborn. This page is generated from the same
+            pipeline: <code>build_site.py</code> reloads the raw CSVs, repeats the notebook's cleaning, and exports the station table the charts read.
+          </p>
+        </div>
+        <div class="prose">
+          <h2>How to interpret these numbers</h2>
+          <ul>
+            <li><strong>Dissolved oxygen:</strong> higher is better; below 4 mg/L stresses aquatic life.</li>
+            <li><strong>BOD:</strong> oxygen demanded by organic matter; higher means more organic pollution such as sewage.</li>
+            <li><strong>pH:</strong> 6.5–8.5 is the acceptable band.</li>
+            <li><strong>Coliforms:</strong> indicators of sewage contamination; values span several orders of magnitude, so a few stations dominate averages.</li>
+            <li><strong>Temperature, conductivity, nitrate:</strong> no reference value in the dataset, so they are described but not screened.</li>
+          </ul>
+        </div>
+        <div class="prose">
+          <h2>Data sources and limitations</h2>
+          <ul>
+            <li>Source: <a href="https://data.gov.in" target="_blank" rel="noopener">Data.gov.in</a>, <em>Water Quality in India – 2013</em> (36 CSV files).</li>
+            <li>1,309 missing cells were filled with column medians; imputed values are estimates and can shift averages.</li>
+            <li>Water-body type is inferred from filenames, not supplied as a column.</li>
+            <li>State names are used as recorded (for example "TAMILNADU" and "TAMIL NADU" appear separately), matching the notebook's grouping.</li>
+            <li>Values are annual means from 2013 and may not reflect present-day conditions.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p><strong>Rivers, Under Strain</strong> · An exploratory water-quality data-analysis project</p>
+      <p>Figures are calculated from the project's station-level CSV files.</p>
+    </div>
+  </footer>
+
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
